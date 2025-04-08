@@ -19,6 +19,19 @@ pipeline {
             }
         }
 
+        stage('Install Composer (If Missing)') {
+            steps {
+                sh '''
+                    if ! [ -x "$(command -v composer)" ]; then
+                    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+                    php composer-setup.php
+                    sudo mv composer.phar /usr/local/bin/composer
+                    fi
+                '''
+            }
+        }
+
+
         stage('Install Dependencies') {
             steps {
                 sh 'composer install --no-interaction --prefer-dist --optimize-autoloader'
