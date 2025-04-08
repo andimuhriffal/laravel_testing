@@ -1,0 +1,79 @@
+pipeline {
+    agent any
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '5'))
+    }
+
+    environment {
+        REMOTE_USER = 'riffal'
+        REMOTE_HOST = '192.168.1.24'
+        DEPLOY_DIR = '/var/www/html/laravel-testing-server'
+        BRANCH = 'main'
+    }
+
+    stages {
+        stage('Clone Repo') {
+            steps {
+                git branch: "${env.BRANCH}", url: 'https://github.com/andimuhriffal/laravel_testing.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'composer install --no-interaction --prefer-dist --optimize-autoloader'
+            }
+        }
+
+        stage('Setup PHP & Nginx') {
+            steps {
+                sshagent (credentials: ['ssh-credential-id']) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST '
+                            sudo apt update &&
+                            sudo apt install -y software-properties-common &&
+                            sudo add-apt-repository ppa:ondrej/php -y &&
+                            sudo apt update &&
+                            sudo apt install -y php8.1 php8.1-fpm php8.1-cli php8.1-mbstring php8.1-xml php8.1-mysql php8.1-curl php8.1-zip php8.1-bcmath unzip nginx &&
+                            sudo systemctl enable php8.1-fpm &&
+                            sudo systemctl enable nginx &&
+                            sudo systemctl start php8.1-fpm &&
+                            sudo systemctl start nginx &&
+                            php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" &&
+                            php composer-setup.php &&
+                            sudo mv composer.phar /usr/local/bin/composer
+                        '
+                    """
+                }
+            }
+        }
+
+        stage('Deploy to Ubuntu Server') {
+            steps {
+                sshagent (credentials: ['ssh-credential-id']) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST '
+                            mkdir -p $DEPLOY_DIR &&
+                            cd $DEPLOY_DIR &&
+                            git pull origin $BRANCH &&
+                            composer install --no-interaction --prefer-dist --optimize-autoloader &&
+                            php artisan migrate --force &&
+                            php artisan config:cache &&
+                            php artisan route:cache &&
+                            php artisan key:generate
+                        '
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Deployment Berhasil ke Ubuntu Server!'
+        }
+        failure {
+            echo '❌ Deployment Gagal!'
+        }
+    }
+}
