@@ -51,7 +51,7 @@ pipeline {
             }
         }
 
-        stage('Setup PHP & Nginx') {
+        stage('Setup PHP & Nginx on Remote') {
             steps {
                 sshagent (credentials: ['ssh-credential-id']) {
                     sh """
@@ -63,11 +63,13 @@ pipeline {
                             sudo apt install -y php8.1 php8.1-fpm php8.1-cli php8.1-mbstring php8.1-xml php8.1-mysql php8.1-curl php8.1-zip php8.1-bcmath unzip nginx &&
                             sudo systemctl enable php8.1-fpm &&
                             sudo systemctl enable nginx &&
-                            sudo systemctl start php8.1-fpm &&
-                            sudo systemctl start nginx &&
-                            php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" &&
-                            php composer-setup.php &&
-                            sudo mv composer.phar /usr/local/bin/composer
+                            sudo systemctl restart php8.1-fpm &&
+                            sudo systemctl restart nginx &&
+                            if ! command -v composer &> /dev/null; then
+                                php -r "copy(\'https://getcomposer.org/installer\', \'composer-setup.php\');"
+                                php composer-setup.php
+                                sudo mv composer.phar /usr/local/bin/composer
+                            fi
                         '
                     """
                 }
@@ -79,14 +81,21 @@ pipeline {
                 sshagent (credentials: ['ssh-credential-id']) {
                     sh """
                         ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST '
-                            mkdir -p $DEPLOY_DIR &&
+                            if [ ! -d "$DEPLOY_DIR" ]; then
+                                mkdir -p $DEPLOY_DIR &&
+                                git clone https://github.com/andimuhriffal/laravel_testing.git $DEPLOY_DIR
+                            fi &&
                             cd $DEPLOY_DIR &&
                             git pull origin $BRANCH &&
                             composer install --no-interaction --prefer-dist --optimize-autoloader &&
+                            cp .env.example .env &&
+                            php artisan key:generate &&
                             php artisan migrate --force &&
                             php artisan config:cache &&
                             php artisan route:cache &&
-                            php artisan key:generate
+                            php artisan view:cache &&
+                            chmod -R 775 storage bootstrap/cache &&
+                            chown -R www-data:www-data storage bootstrap/cache
                         '
                     """
                 }
