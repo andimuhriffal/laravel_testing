@@ -13,24 +13,37 @@ pipeline {
     }
 
     stages {
+        stage('Setup Agent Laravel') {
+            steps {
+                sh '''
+                    echo "⚙️  Mulai Setup Agent Laravel"
+                    sudo apt update
+                    sudo apt install -y php-cli php-mbstring unzip curl php-xml php-curl php-bcmath php-tokenizer php-mysql php-zip
+
+                    if ! command -v composer &> /dev/null
+                    then
+                        echo "📦 Composer belum ada. Menginstal Composer..."
+                        php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+                        php composer-setup.php
+                        sudo mv composer.phar /usr/local/bin/composer
+                        rm composer-setup.php
+                    else
+                        echo "✅ Composer sudah terinstal: $(composer --version)"
+                    fi
+
+                    echo "PHP Version:"
+                    php -v
+                    echo "Composer Version:"
+                    composer --version
+                '''
+            }
+        }
+
         stage('Clone Repo') {
             steps {
                 git branch: "${env.BRANCH}", url: 'https://github.com/andimuhriffal/laravel_testing.git'
             }
         }
-
-        stage('Install Composer (If Missing)') {
-            steps {
-                sh '''
-                    if ! [ -x "$(command -v composer)" ]; then
-                    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-                    php composer-setup.php
-                    sudo mv composer.phar /usr/local/bin/composer
-                    fi
-                '''
-            }
-        }
-
 
         stage('Install Dependencies') {
             steps {
