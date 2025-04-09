@@ -2,10 +2,10 @@ pipeline {
     agent { label 'agent-laravel' }
 
     environment {
-        DEPLOY_USER = 'ubuntu'
-        DEPLOY_HOST = '192.168.1.100'  // Ganti dengan IP Ubuntu Server kamu
-        DEPLOY_PATH = '/var/www/html/laravel-app'
-        SSH_CREDENTIALS = 'ssh-key-jenkins'  // ID SSH Key di Jenkins
+        DEPLOY_USER = 'riffal'
+        DEPLOY_HOST = '192.168.1.24'  // Ganti dengan IP Ubuntu Server kamu
+        DEPLOY_PATH = '/var/www/html/laravel-testing'
+        SSH_CREDENTIALS = 'laravel-agent'  // ID SSH Key di Jenkins
     }
 
     stages {
