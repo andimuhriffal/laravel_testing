@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Checkout Kode') {
             steps {
-                git branch: 'main', url: 'git@bitbucket.org:username/project-laravel.git'
+                git branch: 'main', url: 'https://github.com/andimuhriffal/laravel_testing.git'
             }
         }
 
