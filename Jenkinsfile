@@ -18,14 +18,15 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh '''
-                php -v  # Cek versi PHP
+                apt install software-properties-common -y
+                add-apt-repository ppa:ondrej/php -y
+                apt update
+                apt install php8.1 php8.1-cli php8.1-fpm php8.1-mysql php8.1-curl php8.1-mbstring php8.1-xml php8.1-zip php8.1-bcmath php8.1-soap php8.1-intl unzip -y
+                apt install nginx -y
+                ln -s /etc/nginx/sites-available/laravelapp /etc/nginx/sites-enabled/
+                systemctl restart php8.1-fpm
+                systemctl restart nginx
 
-                # Install dependencies Laravel
-                composer install --no-interaction --prefer-dist --optimize-autoloader
-
-                # Frontend (jika pakai Laravel Mix)
-                npm install
-                npm run build
                 '''
             }
         }
