@@ -3,9 +3,9 @@ pipeline {
 
     environment {
         DEPLOY_USER = 'riffal'
-        DEPLOY_HOST = '192.168.1.24'  // Ganti dengan IP Ubuntu Server kamu
+        DEPLOY_HOST = '192.168.1.24'
         DEPLOY_PATH = '/var/www/html/laravel-testing'
-        SSH_CREDENTIALS = 'laravel-agent'  // ID SSH Key di Jenkins
+        SSH_CREDENTIALS = 'laravel-agent'
     }
 
     stages {
@@ -15,26 +15,11 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
-            steps {
-                sh '''
-                apt install software-properties-common -y
-                add-apt-repository ppa:ondrej/php -y
-                apt update
-                apt install php8.1 php8.1-cli php8.1-fpm php8.1-mysql php8.1-curl php8.1-mbstring php8.1-xml php8.1-zip php8.1-bcmath php8.1-soap php8.1-intl unzip -y
-                apt install nginx -y
-                ln -s /etc/nginx/sites-available/laravelapp /etc/nginx/sites-enabled/
-                systemctl restart php8.1-fpm
-                systemctl restart nginx
-
-                '''
-            }
-        }
-
-        stage('Siapkan Laravel') {
+        stage('Siapkan Laravel (di Jenkins)') {
             steps {
                 sh '''
                 cp .env.example .env || true
+                composer install --no-interaction --prefer-dist --optimize-autoloader
                 php artisan key:generate
                 php artisan config:cache
                 php artisan route:cache
@@ -42,14 +27,14 @@ pipeline {
             }
         }
 
-        stage('Deploy to Ubuntu Server') {
+        stage('Deploy ke Ubuntu Server') {
             steps {
                 sshagent (credentials: [SSH_CREDENTIALS]) {
                     sh '''
-                    echo "Sync project to server..."
+                    echo "Sinkronisasi project ke server..."
                     rsync -avz --delete --exclude=".env" --exclude="node_modules" ./ $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH
 
-                    echo "Running Laravel setup on remote server..."
+                    echo "Menjalankan setup Laravel di server..."
                     ssh $DEPLOY_USER@$DEPLOY_HOST "
                         cd $DEPLOY_PATH &&
                         composer install --no-interaction --prefer-dist --optimize-autoloader &&
