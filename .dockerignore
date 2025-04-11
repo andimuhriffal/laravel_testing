@@ -1,0 +1,41 @@
+# Laravel-related
+/vendor
+/node_modules
+/storage/*.key
+/storage/oauth-private.key
+/storage/oauth-public.key
+/storage/debugbar
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+
+# Environment & config
+.env
+.env.*.backup
+Homestead.yaml
+Homestead.json
+
+# IDE/editor related
+*.idea
+*.vscode
+*.phpstorm.meta.php
+
+# OS & misc
+.DS_Store
+Thumbs.db
+*.log
+
+# Git
+.git
+.gitignore
+
+# Docker
+.dockerignore
+Dockerfile
+Jenkinsfile
+
+# Composer / NPM lock files (opsional, kalau nggak mau cache)
+# composer.lock
+# package-lock.json
+# yarn.lock

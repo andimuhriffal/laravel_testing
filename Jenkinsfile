@@ -1,38 +1,58 @@
 pipeline {
-    agent { label 'agent-laravel' }
+  label { label 'agent-laravel' }
 
-    environment {
-        COMPOSE_PROJECT_NAME = "laravel_project"
+  options {
+    buildDiscarder(logRotator(numToKeepStr: '5'))
+  }
+
+  environment {
+    IMAGE_NAME = 'riffal/laravel-app'
+    IMAGE_TAG = 'latest'
+    CONTAINER_NAME = 'laravel-app'
+  }
+
+  stages {
+    stage('Build Image') {
+      steps {
+        sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
+      }
     }
 
-    stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'main', url: 'https://github.com/andimuhriffal/laravel_testing.git'
-            }
-        }
-        
-        stage('Build and Deploy') {
-            steps {
-                sh '''
-                    echo "[1/3] Stop and remove previous containers"
-                    docker-compose down || true
-
-                    echo "[2/3] Build and run docker-compose"
-                    docker-compose up -d --build
-
-                    echo "[3/3] Deployment complete"
-                '''
-            }
-        }
+    stage('Stop Existing Container') {
+      steps {
+        // Hentikan container lama jika berjalan
+        sh '''
+          docker stop $CONTAINER_NAME || true
+          docker rm $CONTAINER_NAME || true
+        '''
+      }
     }
 
-    post {
-        success {
-            echo "✅ Laravel berhasil dideploy ke agent-laravel2 (port 8000)"
-        }
-        failure {
-            echo "❌ Deployment gagal. Cek error log."
-        }
+    stage('Run Container') {
+      steps {
+        // Jalankan container baru
+        sh '''
+          docker run -d --name $CONTAINER_NAME \
+          -p 9000:9000 \
+          -v $WORKSPACE:/var/www \
+          $IMAGE_NAME:$IMAGE_TAG
+        '''
+      }
     }
+
+    stage('List Running Containers') {
+      steps {
+        sh 'docker ps'
+      }
+    }
+  }
+
+  post {
+    failure {
+      echo 'Something went wrong in the pipeline!'
+    }
+    always {
+      sh 'docker image prune -f'
+    }
+  }
 }
