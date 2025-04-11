@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'agent-laravel' }
+    agent { label 'agent-laravel' } // <-- ganti sesuai label node yang kamu maksud
 
     environment {
         COMPOSE_PROJECT_NAME = "laravel_project"
@@ -29,7 +29,7 @@ pipeline {
 
     post {
         success {
-            echo "✅ Laravel berhasil dideploy ke laravel-agent (port 8000)"
+            echo "✅ Laravel berhasil dideploy ke agent-laravel2 (port 8000)"
         }
         failure {
             echo "❌ Deployment gagal. Cek error log."
