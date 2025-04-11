@@ -1,7 +1,6 @@
 pipeline {
-    
   agent {
-    label 'agent-laravel'  // gunakan label sesuai agent node milikmu
+    label 'agent-laravel' // ganti sesuai nama agen di Jenkins kamu
   }
 
   options {
@@ -9,39 +8,32 @@ pipeline {
   }
 
   environment {
-    IMAGE_NAME = 'riffal/laravel-app'
-    IMAGE_TAG = 'latest'
-    CONTAINER_NAME = 'laravel-app'
+    COMPOSE_PROJECT_NAME = 'laravel_project'
   }
 
   stages {
-    stage('Build Image') {
+    stage('Checkout') {
       steps {
-        sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
+        checkout scm
       }
     }
 
-    stage('Stop Existing Container') {
+    stage('Build & Start Docker Compose') {
       steps {
-        sh '''
-          docker stop $CONTAINER_NAME || true
-          docker rm $CONTAINER_NAME || true
-        '''
+        sh 'docker-compose down --remove-orphans'
+        sh 'docker-compose build --no-cache'
+        sh 'docker-compose up -d'
       }
     }
 
-    stage('Run Container') {
+    stage('Run Laravel Commands') {
       steps {
-        sh '''
-          docker run -d --name $CONTAINER_NAME \
-          -p 9000:9000 \
-          -v $WORKSPACE:/var/www \
-          $IMAGE_NAME:$IMAGE_TAG
-        '''
+        sh 'docker exec laravel-app php artisan config:cache'
+        sh 'docker exec laravel-app php artisan migrate --force'
       }
     }
 
-    stage('List Running Containers') {
+    stage('Check Running Containers') {
       steps {
         sh 'docker ps'
       }
@@ -50,10 +42,11 @@ pipeline {
 
   post {
     failure {
-      echo 'Pipeline gagal!'
+      echo 'Pipeline failed!'
     }
     always {
-      sh 'docker image prune -f'
+      echo 'Cleaning up unused Docker resources...'
+      sh 'docker system prune -f'
     }
   }
 }
