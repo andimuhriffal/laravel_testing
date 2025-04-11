@@ -1,5 +1,5 @@
 pipeline {
-  label { label 'agent-laravel' }
+  label { 'agent-laravel' }
 
   options {
     buildDiscarder(logRotator(numToKeepStr: '5'))
