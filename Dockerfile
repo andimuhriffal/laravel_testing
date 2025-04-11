@@ -16,11 +16,6 @@ WORKDIR /var/www
 # Copy semua source Laravel
 COPY . .
 
-# Buat folder penting (jika belum ada) dan atur permission
-RUN mkdir -p /var/www/storage/logs /var/www/bootstrap/cache \
-    && chown -R www-data:www-data /var/www \
-    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
-
 # Install dependency Laravel
 RUN composer install --no-dev --optimize-autoloader
 
