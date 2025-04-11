@@ -13,9 +13,7 @@ services:
     user: "${UID}:${GID}" # Tambahkan ini agar permission match host user
     networks:
       - laravel-net
-    depends_on:
-      - db # kalau nanti ada database
-
+    
   webserver:
     image: nginx:stable
     container_name: nginx-laravel
