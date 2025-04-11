@@ -18,10 +18,14 @@ pipeline {
                     echo "[1/3] Stop and remove previous containers"
                     docker-compose down || true
 
-                    echo "[2/3] Build and run docker-compose"
+                    echo "[2/3] Fix permissions for Laravel storage and cache"
+                    sudo chown -R $(id -u):www-data storage bootstrap/cache
+                    sudo chmod -R 775 storage bootstrap/cache
+
+                    echo "[3/3] Build and run docker-compose"
                     docker-compose up -d --build
 
-                    echo "[3/3] Deployment complete"
+                    echo "[✅] Deployment complete"
                 '''
             }
         }
