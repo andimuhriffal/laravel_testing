@@ -17,7 +17,7 @@ pipeline {
                 sh '''
                     echo "[0/3] Fixing permissions for storage and bootstrap/cache"
                     sudo chmod -R 775 storage bootstrap/cache || true
-                    sudo chown -R $USER:www-data storage bootstrap/cache || true
+                    sudo chown -R $USER:riffal storage bootstrap/cache || true
                 '''
             }
         }
