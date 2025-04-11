@@ -1,5 +1,7 @@
 pipeline {
-  label { 'agent-laravel' }
+  agent {
+    label 'agent-laravel'  // gunakan label sesuai agent node milikmu
+  }
 
   options {
     buildDiscarder(logRotator(numToKeepStr: '5'))
@@ -20,7 +22,6 @@ pipeline {
 
     stage('Stop Existing Container') {
       steps {
-        // Hentikan container lama jika berjalan
         sh '''
           docker stop $CONTAINER_NAME || true
           docker rm $CONTAINER_NAME || true
@@ -30,7 +31,6 @@ pipeline {
 
     stage('Run Container') {
       steps {
-        // Jalankan container baru
         sh '''
           docker run -d --name $CONTAINER_NAME \
           -p 9000:9000 \
@@ -49,7 +49,7 @@ pipeline {
 
   post {
     failure {
-      echo 'Something went wrong in the pipeline!'
+      echo 'Pipeline gagal!'
     }
     always {
       sh 'docker image prune -f'
