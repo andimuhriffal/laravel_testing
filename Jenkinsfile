@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'laravel-agent' }
+    agent { label 'agent-laravel' }
 
     environment {
         COMPOSE_PROJECT_NAME = "laravel_project"
