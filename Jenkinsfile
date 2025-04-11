@@ -1,61 +1,38 @@
 pipeline {
-    agent { label 'agent-laravel' }
+    agent { label 'laravel-agent' }
 
     environment {
-        DEPLOY_USER = 'riffal'
-        DEPLOY_HOST = '192.168.1.24'
-        DEPLOY_PATH = '/var/www/html/laravel-testing'
-        SSH_CREDENTIALS = 'laravel-agent'
+        COMPOSE_PROJECT_NAME = "laravel_project"
     }
 
     stages {
-        stage('Checkout Kode') {
+        stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/andimuhriffal/laravel_testing.git'
+                git 'https://github.com/username/laravel-app.git' // ganti sesuai repo kamu
             }
         }
 
-        stage('Siapkan Laravel (di Jenkins)') {
+        stage('Build and Deploy') {
             steps {
                 sh '''
-                cp .env.example .env || true
-                composer install --no-interaction --prefer-dist --optimize-autoloader
-                php artisan key:generate
-                php artisan config:cache
-                php artisan route:cache
+                    echo "[1/3] Stop and remove previous containers"
+                    docker-compose down || true
+
+                    echo "[2/3] Build and run docker-compose"
+                    docker-compose up -d --build
+
+                    echo "[3/3] Deployment complete"
                 '''
-            }
-        }
-
-        stage('Deploy ke Ubuntu Server') {
-            steps {
-                sshagent (credentials: [SSH_CREDENTIALS]) {
-                    sh '''
-                    echo "Sinkronisasi project ke server..."
-                    rsync -avz --delete --exclude=".env" --exclude="node_modules" ./ $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH
-
-                    echo "Menjalankan setup Laravel di server..."
-                    ssh $DEPLOY_USER@$DEPLOY_HOST "
-                        cd $DEPLOY_PATH &&
-                        composer install --no-interaction --prefer-dist --optimize-autoloader &&
-                        php artisan migrate --force &&
-                        php artisan config:cache &&
-                        php artisan route:cache &&
-                        sudo systemctl reload php8.1-fpm &&
-                        sudo systemctl reload nginx
-                    "
-                    '''
-                }
             }
         }
     }
 
     post {
         success {
-            echo '✅ Deploy Laravel ke Ubuntu + Nginx berhasil!'
+            echo "✅ Laravel berhasil dideploy ke laravel-agent (port 8000)"
         }
         failure {
-            echo '❌ Deploy gagal. Cek log error.'
+            echo "❌ Deployment gagal. Cek error log."
         }
     }
 }
