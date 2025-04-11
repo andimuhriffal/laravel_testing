@@ -1,4 +1,5 @@
 pipeline {
+    
   agent {
     label 'agent-laravel'  // gunakan label sesuai agent node milikmu
   }
