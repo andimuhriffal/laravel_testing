@@ -9,6 +9,10 @@ services:
     container_name: laravel-app
     volumes:
       - ./:/var/www
+    working_dir: /var/www
+    user: "1000:1000" # jalankan container dengan UID:GID dari user host (riffal)
+    environment:
+      - COMPOSER_ALLOW_SUPERUSER=1
     networks:
       - laravel-net
 
