@@ -9,8 +9,12 @@ services:
     container_name: laravel-app
     volumes:
       - ./:/var/www
+    working_dir: /var/www
+    user: "${UID}:${GID}" # Tambahkan ini agar permission match host user
     networks:
       - laravel-net
+    depends_on:
+      - db # kalau nanti ada database
 
   webserver:
     image: nginx:stable
