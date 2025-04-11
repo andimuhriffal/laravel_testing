@@ -11,17 +11,7 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/andimuhriffal/laravel_testing.git'
             }
         }
-
-        stage('Fix Permissions') {
-            steps {
-                sh '''
-                    echo "[0/3] Fixing permissions for storage and bootstrap/cache"
-                    sudo chmod -R 775 storage bootstrap/cache || true
-                    sudo chown -R $USER:riffal storage bootstrap/cache || true
-                '''
-            }
-        }
-
+        
         stage('Build and Deploy') {
             steps {
                 sh '''
