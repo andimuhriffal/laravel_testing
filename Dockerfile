@@ -18,7 +18,7 @@ COPY . .
 
 # Buat folder penting (jika belum ada) dan atur permission
 RUN mkdir -p /var/www/storage/logs /var/www/bootstrap/cache \
-    && chown -R riffal:riffal /var/www \
+    && chown -R www-data:riffal /var/www \
     && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 # Install dependency Laravel
