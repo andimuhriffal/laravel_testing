@@ -1,6 +1,6 @@
 pipeline {
   agent {
-    label 'agent-laravel' // ganti sesuai nama agen di Jenkins kamu
+    label 'agent-laravel' // ganti dengan label sesuai node Jenkins kamu
   }
 
   options {
@@ -23,6 +23,12 @@ pipeline {
         sh 'docker-compose down --remove-orphans'
         sh 'docker-compose build --no-cache'
         sh 'docker-compose up -d'
+      }
+    }
+
+    stage('Install Laravel Dependencies') {
+      steps {
+        sh 'docker exec laravel-app composer install --no-dev --optimize-autoloader'
       }
     }
 
