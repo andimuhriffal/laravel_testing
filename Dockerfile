@@ -7,25 +7,26 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install pdo pdo_mysql mbstring xml zip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Salin Composer dari official image
+# Install Composer dari official image
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www
 
-# Copy semua source Laravel
+# Copy project Laravel
 COPY . .
 
-# Buat folder penting (jika belum ada) dan atur permission
-RUN mkdir -p /var/www/storage/logs /var/www/bootstrap/cache \
-    && chown -R www-data:riffal /var/www \
-    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
-
-# Install dependency Laravel
+# Install Laravel dependencies (non-dev, optimize autoloader)
 RUN composer install --no-dev --optimize-autoloader
 
-# Expose port default PHP-FPM
+# Set permissions
+RUN chown -R www-data:www-data /var/www \
+    && chmod -R 755 /var/www/storage /var/www/bootstrap/cache
+
+# Expose port PHP-FPM
 EXPOSE 9000
 
-# Jalankan PHP-FPM
+# Jalankan php-fpm
 CMD ["php-fpm"]
+
+
