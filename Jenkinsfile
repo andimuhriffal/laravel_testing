@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/username/laravel-app.git' // ganti sesuai repo kamu
+                git 'https://github.com/andimuhriffal/laravel_testing.git' // ganti sesuai repo kamu
             }
         }
 
