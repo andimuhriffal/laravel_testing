@@ -18,6 +18,25 @@ pipeline {
       }
     }
 
+    stage('Prepare Environment') {
+      steps {
+        sh '''
+          # Jika file .env belum ada, buat dari .env.example
+          if [ ! -f .env ]; then
+            cp .env.example .env
+          fi
+
+          # Ubah nilai pada .env sesuai konfigurasi docker-compose
+          sed -i 's|APP_URL=.*|APP_URL=http://localhost:8000|' .env
+          sed -i 's|DB_HOST=.*|DB_HOST=mysql|' .env
+          sed -i 's|DB_PORT=.*|DB_PORT=3306|' .env
+          sed -i 's|DB_DATABASE=.*|DB_DATABASE=laravel|' .env
+          sed -i 's|DB_USERNAME=.*|DB_USERNAME=laravel|' .env
+          sed -i 's|DB_PASSWORD=.*|DB_PASSWORD=secret|' .env
+        '''
+      }
+    }
+
     stage('Build & Start Docker Compose') {
       steps {
         sh 'docker-compose down --remove-orphans'
@@ -26,15 +45,11 @@ pipeline {
       }
     }
 
-    stage('Install Laravel Dependencies') {
+    stage('Generate Key & Migrate') {
       steps {
-        sh 'docker exec laravel-app composer install --no-dev --optimize-autoloader'
-      }
-    }
-
-    stage('Run Laravel Commands') {
-      steps {
+        sh 'docker exec laravel-app php artisan key:generate'
         sh 'docker exec laravel-app php artisan config:cache'
+        sh 'docker exec laravel-app php artisan migrate --force'
       }
     }
 
