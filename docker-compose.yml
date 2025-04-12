@@ -9,6 +9,8 @@ services:
     volumes:
       - .:/var/www
       - ./.env:/var/www/.env
+    depends_on:
+      - mysql
     networks:
       - laravel-net
 
