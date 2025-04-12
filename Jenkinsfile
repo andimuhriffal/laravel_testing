@@ -1,6 +1,6 @@
 pipeline {
   agent {
-    label 'agent-laravel' // Ganti sesuai nama node Jenkins kamu
+    label 'agent-laravel'
   }
 
   options {
