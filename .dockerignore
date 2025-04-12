@@ -11,6 +11,8 @@
 /storage/logs/*
 
 # Environment & config
+.env
+.env.*.backup
 Homestead.yaml
 Homestead.json
 
