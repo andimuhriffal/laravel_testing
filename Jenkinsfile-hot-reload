@@ -1,0 +1,42 @@
+pipeline {
+    agent { label 'agent-laravel' }
+
+    environment {
+        COMPOSE_PROJECT_NAME = "laravel"
+    }
+
+    stages {
+        stage('Restart Laravel Container (optional)') {
+            steps {
+                // Jika perlu pastikan kontainer tetap jalan
+                sh 'docker-compose up -d'
+            }
+        }
+
+        stage('Clear Cache (Laravel Commands)') {
+            steps {
+                sh '''
+                    docker exec laravel_app php artisan config:clear
+                    docker exec laravel_app php artisan route:clear
+                    docker exec laravel_app php artisan view:clear
+                '''
+            }
+        }
+
+        stage('Reload Nginx / PHP-FPM (optional)') {
+            steps {
+                // Jika kamu pakai supervisor atau perlu reload PHP
+                sh 'docker exec laravel_app service php8.1-fpm reload || true'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Laravel code changes deployed successfully.'
+        }
+        failure {
+            echo 'Deployment failed.'
+        }
+    }
+}
