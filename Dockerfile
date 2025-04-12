@@ -1,27 +1,35 @@
-FROM php:8.1-fpm
+FROM php:8.2-fpm
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
-    git curl zip unzip libzip-dev libonig-dev libxml2-dev \
-    && docker-php-ext-install pdo pdo_mysql mbstring xml zip \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    build-essential \
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    locales \
+    zip \
+    jpegoptim optipng pngquant gifsicle \
+    vim unzip git curl libonig-dev \
+    libxml2-dev \
+    libzip-dev \
+    npm \
+    nodejs \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
 # Install Composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www
 
-# Copy all project files
-COPY . .
-
-# Install Laravel dependencies
-RUN composer install --no-dev --optimize-autoloader
+# Copy existing application directory
+COPY . /var/www
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www \
-    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+    && chmod -R 755 /var/www
 
+# Expose port
 EXPOSE 9000
 
 CMD ["php-fpm"]
