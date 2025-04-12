@@ -3,9 +3,18 @@ pipeline {
 
     environment {
         COMPOSE_PROJECT_NAME = "laravel"
+        MYSQL_ENV_FILE = credentials('MYSQL_ENV')
     }
 
     stages {
+        stage('Prepare mysql.env') {
+            steps {
+                sh '''
+                    cp $MYSQL_ENV_FILE mysql.env
+                '''
+            }
+        }
+
         stage('Clean Old Docker Containers & Images') {
             steps {
                 sh '''
