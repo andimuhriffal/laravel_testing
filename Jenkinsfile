@@ -1,6 +1,6 @@
 pipeline {
   agent {
-    label 'agent-laravel'
+    label 'agent-laravel' // Ganti sesuai nama node Jenkins kamu
   }
 
   options {
@@ -18,25 +18,6 @@ pipeline {
       }
     }
 
-    stage('Prepare Environment') {
-      steps {
-        sh '''
-          # Jika file .env belum ada, buat dari .env.example
-          if [ ! -f .env ]; then
-            cp .env.example .env
-          fi
-
-          # Ubah nilai pada .env sesuai konfigurasi docker-compose
-          sed -i 's|APP_URL=.*|APP_URL=http://localhost:8000|' .env
-          sed -i 's|DB_HOST=.*|DB_HOST=mysql|' .env
-          sed -i 's|DB_PORT=.*|DB_PORT=3306|' .env
-          sed -i 's|DB_DATABASE=.*|DB_DATABASE=laravel|' .env
-          sed -i 's|DB_USERNAME=.*|DB_USERNAME=laravel|' .env
-          sed -i 's|DB_PASSWORD=.*|DB_PASSWORD=secret|' .env
-        '''
-      }
-    }
-
     stage('Build & Start Docker Compose') {
       steps {
         sh 'docker-compose down --remove-orphans'
@@ -45,11 +26,30 @@ pipeline {
       }
     }
 
-    stage('Generate Key & Migrate') {
+    stage('Prepare Environment') {
       steps {
-        sh 'docker exec laravel-app php artisan key:generate'
-        sh 'docker exec laravel-app php artisan config:cache'
-        sh 'docker exec laravel-app php artisan migrate --force'
+        sh '''
+          echo "Menyalin .env ke dalam container..."
+          docker exec laravel-app cp .env.example .env
+
+          echo "Mengatur variabel .env..."
+          docker exec laravel-app sed -i 's|APP_URL=.*|APP_URL=http://localhost:8000|' .env
+          docker exec laravel-app sed -i 's|DB_HOST=.*|DB_HOST=mysql|' .env
+          docker exec laravel-app sed -i 's|DB_PORT=.*|DB_PORT=3306|' .env
+          docker exec laravel-app sed -i 's|DB_DATABASE=.*|DB_DATABASE=laravel|' .env
+          docker exec laravel-app sed -i 's|DB_USERNAME=.*|DB_USERNAME=laravel|' .env
+          docker exec laravel-app sed -i 's|DB_PASSWORD=.*|DB_PASSWORD=secret|' .env
+        '''
+      }
+    }
+
+    stage('Run Laravel Commands') {
+      steps {
+        sh '''
+          docker exec laravel-app php artisan config:clear
+          docker exec laravel-app php artisan config:cache
+          docker exec laravel-app php artisan migrate --force
+        '''
       }
     }
 
@@ -62,10 +62,10 @@ pipeline {
 
   post {
     failure {
-      echo 'Pipeline failed!'
+      echo '❌ Pipeline gagal!'
     }
     always {
-      echo 'Cleaning up unused Docker resources...'
+      echo '🧹 Membersihkan resource Docker yang tidak terpakai...'
       sh 'docker system prune -f'
     }
   }
