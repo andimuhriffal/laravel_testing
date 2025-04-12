@@ -3,56 +3,40 @@ pipeline {
 
     environment {
         COMPOSE_PROJECT_NAME = "laravel"
-        APP_CONTAINER = "laravel_app"
-    }
-
-    options {
-        skipDefaultCheckout()
     }
 
     stages {
-        stage('Prepare Workspace') {
+        stage('Restart Laravel Container (optional)') {
             steps {
-                script {
-                    sh '''
-                    echo "[INFO] Menghapus folder cache & storage jika dibutuhkan"
-                    sudo rm -rf bootstrap/cache/* storage/framework/* storage/logs/* || true
-                    '''
-                }
-                checkout scm
-            }
-        }
-
-        stage('Ensure Laravel Container is Running') {
-            steps {
+                // Jika perlu pastikan kontainer tetap jalan
                 sh 'docker-compose up -d'
             }
         }
 
-        stage('Clear Laravel Cache') {
+        stage('Clear Cache (Laravel Commands)') {
             steps {
-                sh """
-                    docker exec ${APP_CONTAINER} php artisan config:clear
-                    docker exec ${APP_CONTAINER} php artisan route:clear
-                    docker exec ${APP_CONTAINER} php artisan view:clear
-                """
+                sh '''
+                    docker exec laravel_app php artisan config:clear
+                    docker exec laravel_app php artisan route:clear
+                    docker exec laravel_app php artisan view:clear
+                '''
             }
         }
 
-        stage('Reload PHP-FPM (Optional)') {
+        stage('Reload Nginx / PHP-FPM (optional)') {
             steps {
-                // Hanya jika PHP-FPM berjalan sebagai service (misalnya dalam OS-based image)
-                sh "docker exec ${APP_CONTAINER} service php8.1-fpm reload || true"
+                // Jika kamu pakai supervisor atau perlu reload PHP
+                sh 'docker exec laravel_app service php8.1-fpm reload || true'
             }
         }
     }
 
     post {
         success {
-            echo '✅ Laravel code changes deployed successfully.'
+            echo 'Laravel code changes deployed successfully.'
         }
         failure {
-            echo '❌ Deployment failed.'
+            echo 'Deployment failed.'
         }
     }
 }
