@@ -35,7 +35,6 @@ pipeline {
     stage('Run Laravel Commands') {
       steps {
         sh 'docker exec laravel-app php artisan config:cache'
-        sh 'docker exec laravel-app php artisan migrate --force'
       }
     }
 
