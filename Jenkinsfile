@@ -6,6 +6,15 @@ pipeline {
     }
 
     stages {
+        stage('Clean Old Docker Containers & Images') {
+            steps {
+                sh '''
+                    docker-compose down --rmi all --volumes --remove-orphans || true
+                    docker image prune -af || true
+                '''
+            }
+        }
+
         stage('Build Docker Images') {
             steps {
                 sh 'docker-compose build'
@@ -14,7 +23,6 @@ pipeline {
 
         stage('Run Containers') {
             steps {
-                sh 'docker-compose down'
                 sh 'docker-compose up -d'
             }
         }
@@ -33,9 +41,8 @@ pipeline {
                     docker exec laravel_app php artisan key:generate
                     docker exec laravel_app php artisan migrate --force
                 '''
-              }
-          }
-
+            }
+        }
     }
 
     post {
