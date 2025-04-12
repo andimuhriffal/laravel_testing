@@ -25,12 +25,11 @@ services:
       - app
     networks:
       - laravel
+
   mysql:
     image: mysql:8.0
     container_name: mysql-container
     restart: unless-stopped
-    env_file:
-      - .env
     ports:
       - "3306:3306"
     volumes:
