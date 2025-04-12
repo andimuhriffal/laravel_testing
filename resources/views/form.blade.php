@@ -28,9 +28,35 @@
 </head>
 
 <body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">Testing Server</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Beranda</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Tentang</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Kontak</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Form Section -->
     <div class="container mt-4">
         <div class="form-container">
-            <h2>Formulir Kontak</h2>
+            <h2>Formulir Pendaftaran</h2>
 
             @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
@@ -57,6 +83,30 @@
                     <input type="email" name="email" class="form-control" value="{{ old('email') }}" required>
                 </div>
                 <div class="mb-3">
+                    <label for="alamat" class="form-label">Alamat</label>
+                    <textarea name="alamat" class="form-control" rows="2" required>{{ old('alamat') }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="tempat_lahir" class="form-label">Tempat Lahir</label>
+                    <input type="text" name="tempat_lahir" class="form-control" value="{{ old('tempat_lahir') }}"
+                        required>
+                </div>
+                <div class="mb-3">
+                    <label for="tanggal_lahir" class="form-label">Tanggal Lahir</label>
+                    <input type="date" name="tanggal_lahir" class="form-control" value="{{ old('tanggal_lahir') }}"
+                        required>
+                </div>
+                <div class="mb-3">
+                    <label for="jenis_kelamin" class="form-label">Jenis Kelamin</label>
+                    <select name="jenis_kelamin" class="form-select" required>
+                        <option value="">-- Pilih --</option>
+                        <option value="Laki-laki" {{ old('jenis_kelamin') == 'Laki-laki' ? 'selected' : '' }}>Laki-laki
+                        </option>
+                        <option value="Perempuan" {{ old('jenis_kelamin') == 'Perempuan' ? 'selected' : '' }}>Perempuan
+                        </option>
+                    </select>
+                </div>
+                <div class="mb-3">
                     <label for="pesan" class="form-label">Pesan</label>
                     <textarea name="pesan" class="form-control" rows="4" required>{{ old('pesan') }}</textarea>
                 </div>
@@ -66,6 +116,9 @@
             </form>
         </div>
     </div>
+
+    <!-- Script Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
