@@ -28,12 +28,14 @@ pipeline {
         stage('Set Permissions & Generate Key') {
             steps {
                 sh '''
-                docker exec laravel_app php artisan config:clear
-                docker exec laravel_app php artisan key:generate
-                docker exec laravel_app php artisan migrate --force
+                    docker exec laravel_app sh -c '[ -f .env ] || cp .env.example .env'
+                    docker exec laravel_app php artisan config:clear
+                    docker exec laravel_app php artisan key:generate
+                    docker exec laravel_app php artisan migrate --force
                 '''
-            }
-        }
+              }
+          }
+
     }
 
     post {
