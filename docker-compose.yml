@@ -26,24 +26,23 @@ services:
     networks:
       - laravel
 
+  services:
   mysql:
-    image: mysql:8
-    container_name: laravel_db
+    image: mysql:8.0
+    container_name: mysql-container
+    restart: unless-stopped
+    env_file:
+      - .env
     ports:
       - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: laravel
-      MYSQL_USER: laravel
-      MYSQL_PASSWORD: laravel
     volumes:
-      - dbdata:/var/lib/mysql
-    networks:
-      - laravel
-
+      - mysql_data:/var/lib/mysql
+      
 volumes:
-  dbdata:
+  mysql_data:
 
 networks:
   laravel:
     driver: bridge
+
+
